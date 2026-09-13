@@ -2,8 +2,8 @@
 # Kyle Horn
 # Mini Project 2
 
-import os  # used to create the charts folder and build file paths
-import numpy as np
+import os
+import numpy as np 
 import matplotlib.pyplot as plt
 import yfinance as yf
 
@@ -17,11 +17,13 @@ DATA_SOURCE = "yfinance"
 CHARTS_DIR = "charts"
 
 
+# Function that gets one ticker's last 10 trading days of closing prices.
+# This covers the "collect closing price for last 10 trading days" requirement.
 def get_last_10_closes(ticker):
-  
     # Wrap the actual network calls to yfinance in a try/except, since a
     # bad ticker symbol, no internet connection, etc. could raise an error.
     try:
+        # Create a yfinance Ticker object for this stock symbol.
         stock = yf.Ticker(ticker)
 
         # Start with 14 calendar days as a buffer against weekends/holidays.
@@ -38,6 +40,8 @@ def get_last_10_closes(ticker):
 
     # Verify we actually received at least 10 trading days of data.
     try:
+        # If we still don't have 10 rows even after the "1mo" fallback,
+        # manually raise an error so it gets caught below.
         if len(history) < 10:
             raise ValueError(
                 f"{ticker}: only got {len(history)} trading days, need at least 10"
@@ -69,7 +73,7 @@ def get_last_10_closes(ticker):
 # Dictionary to hold every ticker's NumPy array of closing prices.
 stock_data = {}
 
-# Quick check that data retrieval works before moving on to Matplotlib.
+# Loop over all 5 tickers to fetch their data and fill in stock_data.
 for symbol in TICKERS:
     # Get this ticker's last 10 closes back as a NumPy array.
     closing_prices = get_last_10_closes(symbol)
@@ -80,12 +84,14 @@ for symbol in TICKERS:
     # Print the ticker, the array itself, and confirm its type is NumPy.
     print(symbol, closing_prices, type(closing_prices))
 
-# Create the charts folder if it doesn't already exist (exist_ok avoids an
-# error if it's already there). Wrapped in try/except in case of a
-# permissions problem creating the folder.
+# Wrapped in try/except in case of a permissions problem creating the folder.
 try:
+    # Create the charts folder if it doesn't already exist (exist_ok avoids
+    # an error if it's already there). This covers the "create charts folder
+    # if it doesn't exist" requirement.
     os.makedirs(CHARTS_DIR, exist_ok=True)
 except OSError as error:
+    # Report the problem but don't crash the whole program over it.
     print(f"Error creating charts folder: {error}")
 
 # Now plot a graph for each ticker using Matplotlib.
@@ -128,14 +134,16 @@ for symbol in TICKERS:
     # Build the full file path for this ticker's PNG inside the charts folder.
     chart_path = os.path.join(CHARTS_DIR, f"{symbol}.png")
 
-    # Wrap the file save in try/except in case of a disk/permissions problem.
+    # Wrap the file save in try/except in case of a permissions problem.
     try:
         # Save the figure as a PNG file instead of just displaying it.
+        # This covers the "save graphs as PNG files" requirement.
         fig.savefig(chart_path)
 
         # Let the user know where this chart was saved.
         print(f"Saved chart for {symbol} to {chart_path}")
     except OSError as error:
+        # Report the problem but don't crash the whole program over it.
         print(f"Error saving chart for {symbol}: {error}")
 
     # Close the figure to free up memory now that it's saved.
