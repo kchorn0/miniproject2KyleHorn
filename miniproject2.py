@@ -28,15 +28,22 @@ def get_last_10_closes(ticker):
     actually got at least 10 rows of trading data back, and then trim
     down to just the most recent 10.
     """
-    stock = yf.Ticker(ticker)
+    # Wrap the actual network calls to yfinance in a try/except, since a
+    # bad ticker symbol, no internet connection, etc. could raise an error.
+    try:
+        stock = yf.Ticker(ticker)
 
-    # Start with 14 calendar days as a buffer against weekends/holidays.
-    history = stock.history(period="14d")
+        # Start with 14 calendar days as a buffer against weekends/holidays.
+        history = stock.history(period="14d")
 
-    # If 14 days wasn't enough (extra holidays, data gaps, etc.),
-    # try a wider window before giving up.
-    if len(history) < 10:
-        history = stock.history(period="1mo")
+        # If 14 days wasn't enough (extra holidays, data gaps, etc.),
+        # try a wider window before giving up.
+        if len(history) < 10:
+            history = stock.history(period="1mo")
+    except Exception as error:
+        # Catches things like connection errors or an invalid ticker.
+        print(f"Error fetching data for {ticker}: {error}")
+        return None
 
     # Verify we actually received at least 10 trading days of data.
     try:
@@ -48,9 +55,14 @@ def get_last_10_closes(ticker):
         print(f"Error fetching data for {ticker}: {error}")
         return None
 
-    # Pull the "Close" column out and immediately turn it into a plain
-    # Python LIST using the built-in list() function, as required.
-    all_closes_list = list(history["Close"])
+    # Wrap the column lookup/conversion in case "Close" is ever missing.
+    try:
+        # Pull the "Close" column out and immediately turn it into a plain
+        # Python LIST using the built-in list() function, as required.
+        all_closes_list = list(history["Close"])
+    except KeyError as error:
+        print(f"Error reading closing prices for {ticker}: {error}")
+        return None
 
     # Use normal Python list slicing to keep just the last 10 entries
     # (the most recent 10 trading days, oldest to newest).
@@ -78,8 +90,12 @@ for symbol in TICKERS:
     print(symbol, closing_prices, type(closing_prices))
 
 # Create the charts folder if it doesn't already exist (exist_ok avoids an
-# error if it's already there).
-os.makedirs(CHARTS_DIR, exist_ok=True)
+# error if it's already there). Wrapped in try/except in case of a
+# permissions problem creating the folder.
+try:
+    os.makedirs(CHARTS_DIR, exist_ok=True)
+except OSError as error:
+    print(f"Error creating charts folder: {error}")
 
 # Now plot a graph for each ticker using Matplotlib.
 for symbol in TICKERS:
@@ -121,11 +137,15 @@ for symbol in TICKERS:
     # Build the full file path for this ticker's PNG inside the charts folder.
     chart_path = os.path.join(CHARTS_DIR, f"{symbol}.png")
 
-    # Save the figure as a PNG file instead of just displaying it.
-    fig.savefig(chart_path)
+    # Wrap the file save in try/except in case of a disk/permissions problem.
+    try:
+        # Save the figure as a PNG file instead of just displaying it.
+        fig.savefig(chart_path)
+
+        # Let the user know where this chart was saved.
+        print(f"Saved chart for {symbol} to {chart_path}")
+    except OSError as error:
+        print(f"Error saving chart for {symbol}: {error}")
 
     # Close the figure to free up memory now that it's saved.
     plt.close(fig)
-
-    # Let the user know where this chart was saved.
-    print(f"Saved chart for {symbol} to {chart_path}")
