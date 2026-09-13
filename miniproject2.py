@@ -18,16 +18,7 @@ CHARTS_DIR = "charts"
 
 
 def get_last_10_closes(ticker):
-    """
-    Get the closing price for the last 10 TRADING days for one ticker.
-
-    We can't just ask for "10 days" of history, because weekends and
-    market holidays (e.g. Labor Day on a Monday) mean 10 calendar days
-    does not equal 10 trading days. Instead we request a larger window
-    of calendar days (14, then fall back to 30 if needed), verify we
-    actually got at least 10 rows of trading data back, and then trim
-    down to just the most recent 10.
-    """
+  
     # Wrap the actual network calls to yfinance in a try/except, since a
     # bad ticker symbol, no internet connection, etc. could raise an error.
     try:
