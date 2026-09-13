@@ -2,6 +2,7 @@
 # Kyle Horn
 # Mini Project 2
 
+import os  # used to create the charts folder and build file paths
 import numpy as np
 import matplotlib.pyplot as plt
 import yfinance as yf
@@ -11,6 +12,9 @@ TICKERS = ["AAPL", "MSFT", "AMZN", "GOOGL", "NVDA"]
 
 # Data source used for this project (documented per assignment requirements)
 DATA_SOURCE = "yfinance"
+
+# Name of the folder where chart PNG files will be saved
+CHARTS_DIR = "charts"
 
 
 def get_last_10_closes(ticker):
@@ -73,6 +77,10 @@ for symbol in TICKERS:
     # Print the ticker, the array itself, and confirm its type is NumPy.
     print(symbol, closing_prices, type(closing_prices))
 
+# Create the charts folder if it doesn't already exist (exist_ok avoids an
+# error if it's already there).
+os.makedirs(CHARTS_DIR, exist_ok=True)
+
 # Now plot a graph for each ticker using Matplotlib.
 for symbol in TICKERS:
     # Look up this ticker's NumPy array of closing prices.
@@ -110,5 +118,14 @@ for symbol in TICKERS:
     # Turn on a light grid to make the chart easier to read.
     ax.grid(True, alpha=0.3)
 
-    # Display the finished chart.
-    plt.show()
+    # Build the full file path for this ticker's PNG inside the charts folder.
+    chart_path = os.path.join(CHARTS_DIR, f"{symbol}.png")
+
+    # Save the figure as a PNG file instead of just displaying it.
+    fig.savefig(chart_path)
+
+    # Close the figure to free up memory now that it's saved.
+    plt.close(fig)
+
+    # Let the user know where this chart was saved.
+    print(f"Saved chart for {symbol} to {chart_path}")
