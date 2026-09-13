@@ -44,16 +44,31 @@ def get_last_10_closes(ticker):
         print(f"Error fetching data for {ticker}: {error}")
         return None
 
-    # Trim down to just the most recent 10 trading days, oldest to newest.
-    last_10_days = history.tail(10)
+    # Pull the "Close" column out and immediately turn it into a plain
+    # Python LIST using the built-in list() function, as required.
+    all_closes_list = list(history["Close"])
 
-    # Pull out just the closing prices.
-    closes = last_10_days["Close"]
+    # Use normal Python list slicing to keep just the last 10 entries
+    # (the most recent 10 trading days, oldest to newest).
+    last_10_closes_list = all_closes_list[-10:]
 
-    return closes
+    # Convert that LIST into a NumPy array, as required.
+    closes_array = np.array(last_10_closes_list)
+
+    # Return the NumPy array of closing prices.
+    return closes_array
 
 
-# Quick check that data retrieval works before moving on to NumPy/Matplotlib.
+# Dictionary to hold every ticker's NumPy array of closing prices.
+stock_data = {}
+
+# Quick check that data retrieval works before moving on to Matplotlib.
 for symbol in TICKERS:
+    # Get this ticker's last 10 closes back as a NumPy array.
     closing_prices = get_last_10_closes(symbol)
-    print(symbol, closing_prices)
+
+    # Save the NumPy array under its ticker symbol for later use.
+    stock_data[symbol] = closing_prices
+
+    # Print the ticker, the array itself, and confirm its type is NumPy.
+    print(symbol, closing_prices, type(closing_prices))
