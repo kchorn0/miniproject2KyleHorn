@@ -22,6 +22,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
+Be sure terminal says (.venv)
 
 ## How to run
 
