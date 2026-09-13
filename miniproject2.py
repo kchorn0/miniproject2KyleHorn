@@ -72,3 +72,43 @@ for symbol in TICKERS:
 
     # Print the ticker, the array itself, and confirm its type is NumPy.
     print(symbol, closing_prices, type(closing_prices))
+
+# Now plot a graph for each ticker using Matplotlib.
+for symbol in TICKERS:
+    # Look up this ticker's NumPy array of closing prices.
+    closing_prices = stock_data[symbol]
+
+    # Skip this ticker entirely if we never got usable data for it.
+    if closing_prices is None:
+        print(f"Skipping plot for {symbol}: no data available")
+        continue
+
+    # "If" statement to verify we have at least the required 10 data points
+    # before we bother plotting this ticker.
+    if closing_prices.size < 10:
+        print(f"Skipping plot for {symbol}: only {closing_prices.size} data points")
+        continue
+
+    # Build x-axis values: 0-9, one for each of the 10 trading days.
+    day_numbers = np.arange(closing_prices.size)
+
+    # Create a new Figure and Axes for this ticker (object-oriented style).
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+
+    # Plot the closing prices as a line with circular markers.
+    ax.plot(day_numbers, closing_prices, marker="o", color="C0", linewidth=2)
+
+    # Label the x-axis to show these are trading days.
+    ax.set_xlabel("Trading Day (most recent 10)")
+
+    # Label the y-axis to show these are closing prices in dollars.
+    ax.set_ylabel("Closing Price (USD)")
+
+    # Title the chart with the ticker symbol so it's clear which stock it is.
+    ax.set_title(f"{symbol} - Last 10 Trading Days Closing Price")
+
+    # Turn on a light grid to make the chart easier to read.
+    ax.grid(True, alpha=0.3)
+
+    # Display the finished chart.
+    plt.show()
